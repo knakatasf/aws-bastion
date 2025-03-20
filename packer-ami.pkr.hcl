@@ -8,7 +8,7 @@ packer {
 }
 
 source "amazon-ebs" "amazon_linux" {
-  ami_name      = "custom-amazon-linux-ami"
+  ami_name      = "my-amazon-linux-ami"
   instance_type = "t2.micro"
   region        = "us-east-1"
   source_ami_filter {
@@ -47,5 +47,11 @@ build {
 
       "echo 'Setup complete' > /home/ec2-user/packer-log.txt"
     ]
+  }
+}
+
+post-processors {
+  post-processor "shell-local" {
+    inline = ["echo 'ami_id = \"${build.artifacts[0].id}\"' > terraform.tfvars"]
   }
 }
