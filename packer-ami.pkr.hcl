@@ -49,9 +49,3 @@ build {
     ]
   }
 }
-
-post-processors {
-  post-processor "shell-local" {
-    inline = ["echo 'ami_id = \"${build.artifacts[0].id}\"' > terraform.tfvars"]
-  }
-}

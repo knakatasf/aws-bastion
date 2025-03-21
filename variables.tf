@@ -54,6 +54,7 @@ variable "bastion_prefix" {
 variable "public_key" {
   description = "Public key for SSH access"
   type        = string
+  default     = "aws-key"
 }
 
 variable "resource_tags" {

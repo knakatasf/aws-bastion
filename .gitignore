@@ -2,3 +2,9 @@
 
 aws-key
 aws-key.pub
+
+.terraform.lock.hcl
+build.log
+terraform.tfstate
+terraform.tfstate.backup
+terraform.tfvars
