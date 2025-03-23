@@ -1,20 +1,25 @@
 # AWS Bastion Setup
 
-This guide provides step-by-step instructions to set up an AWS Bastion host using Packer and Terraform.In this guide, please only change the values surrounded by <...> in the command line syntax.Otherwise, please do NOT change the command line syntax—just copy, paste, and run.
+This guide provides step-by-step instructions to set up an AWS Bastion host using Packer and Terraform.
+In this guide, please only change the values surrounded by **<...>** in the command line syntax.
+Otherwise, please do NOT change the command line syntax—just copy, paste, and run.
 
 ## 1. Project outline
 ### 1.1. Custom AMI, using Packer
-This program will create a custom AMI using Packer. The custom AMI runs Amazon Linux as its OS and has Docker installed. Additionally, the public key is baked into the AMI, allowing you to SSH into instances created by the custom AMI.
+This program will create a custom AMI using Packer.
+The custom AMI runs Amazon Linux as its OS and has Docker installed.
+Additionally, the public key is baked into the AMI, allowing you to SSH into instances created by the custom AMI.
 
 ### 1.2. AWS Bastion
-Using the custom AMI, a Bastion Host is launched in a public subnet, allowing access only from your IP address via port 22.Additionally, six private EC2 instances are launched in a private subnet, with access restricted exclusively to the Bastion Host via port 22.
+Using the custom AMI, a Bastion Host is launched in a public subnet, allowing access only from your IP address via port 22.
+Additionally, six private EC2 instances are launched in a private subnet, with access restricted exclusively to the Bastion Host via port 22.
 
 ## 2. Preparation
 ### 2.1. Clone the project and navigate to the Directory
 ```sh
 cd <project-directory>
 ```
-Please change <project-directory> to your actual local project directory path.
+Please change *<project-directory>* to your actual local project directory path.
 
 ### 2.2. Install Packer and Terraform (if needed)
 Run the following commands to install the necessary tools:
@@ -29,7 +34,8 @@ Create an RSA key pair for secure access:
 ```sh
 ssh-keygen -t rsa -b 4096 -f aws-key
 ```
-Please do not change the name or location of the key pair.
+Please do not enter passphrase. Just hit the `Enter` when prompted.
+*Please do NOT change the name or location of the key pair.*
 Packer and Terraform fetch the key pair using this specific name and location.
 
 ### 2.4. Load AWS Credentials and your IP address
@@ -48,16 +54,21 @@ Run the following command to create a custom AMI:
 packer build packer-ami.pkr.hcl
 ```
 Packer will fetch the public key located in the root of the project directory.
-The AMI ID created by `packer-ami.pkr.hcl` will be loaded by the Terraform data source with the tag of the AMI.
+
+After the execution, you should have this output in the command line:
+![img.png](screenshots/img_40.png)
+
+The created AMI's ID will be loaded by the Terraform data source by the AMI's tag.
 
 ## 4. Deploy the infrastructure using Terraform
 Run the following command:
 ```sh
 terraform init
+terraform plan
 terraform apply
 ```
 
-After the execution, you'll see the outputs listing the public IP address of the Bastion Host and private IP addresses for the Private EC2 Instances:
+After the execution, you'll see the outputs listing the **public IP address** of the Bastion Host and **private IP addresses** of the Private EC2 Instances:
 
 ![img.png](screenshots/img.png)
 
@@ -65,6 +76,7 @@ If not, run this command:
 ```sh
 terraform output
 ```
+#### Now all the resources are ready!
 
 ## 5. SSH into the resources using the private key
 ### 5.1. SSH into the Bastion Host.
@@ -78,7 +90,7 @@ SSH Agent acts as a key manager that keeps your private key in memory and provid
 ```sh
 ssh -A -i aws-key ec2-user@<your_bastion_public_ip>
 ```
-Please change <your_bastion_public_ip> with the actual IP address listed by above output.
+Please change *<your_bastion_public_ip>* with the actual IP address listed by above output.
 The private key should be located at the root of the project directory with the name above.
 You need to forward the SSH Agent to the Bastion for the further access to the private EC2 instances.
 
@@ -92,10 +104,10 @@ docker help
 ```sh
 ssh ec2-user@<your_private_instance_ip>
 ```
-Replace <your_private_instance_ip> with one of the actual IP addresses from the Terraform output.
+Replace *<your_private_instance_ip>* with one of the actual IP addresses from the Terraform output.
 SSH Agent will handle authentication without needing the private key on the bastion.
 
-#### Once connected, verify that Docker is installed by running:
+#### Once connected, vtererify that Docker is installed by running:
 ```sh
 docker help
 ```
@@ -123,7 +135,7 @@ docker help
 
 ![img_1.png](screenshots/img_10.png)
 
-### 6.3. The Bation Host and its security group
+### 6.3. The Bastion Host and its security group
 #### The Bastion Host is assigned to the public subnet, so it has a public IP address (EIP).
 
 ![img_2.png](screenshots/img_12.png)
@@ -172,8 +184,8 @@ terraform destroy
 #### This command won't destroy the custom AMI
 
 ## 8. Reflection
-### 8.1. How to pass the AMI ID to the terraform?
-I understood `packer build` will return the AMI ID, but I wondered how to pass the ID to the workflow of the terraform.
+### 8.1. How to pass the AMI ID to terraform?
+I understood `packer build` will return the AMI ID, but I wondered how to pass the ID to the workflow of terraform.
 At first, I tried passing it through `tee build.log`. However, this required additional steps for the user and involved using `grep` with regex to parse the AMI ID from the `build.log`, which is error-prone.
 I found this [article](https://stackoverflow.com/questions/47721602/how-are-data-sources-used-in-terraform), which suggested using data source. By using data source, the user does not need to manually pass the variable to another workflow, making the process easier and more reliable.
 
