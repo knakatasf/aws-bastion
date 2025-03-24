@@ -58,7 +58,7 @@ Packer will fetch the public key located in the root of the project directory.
 After the execution, you should have this output in the command line:
 ![img.png](screenshots/img_40.png)
 
-The created AMI's ID will be loaded by the Terraform data source by the AMI's tag.
+The created AMI's ID will be AUTOMATICALLY loaded by the Terraform data source by the AMI's tag.
 
 ## 4. Deploy the infrastructure using Terraform
 Run the following command:
