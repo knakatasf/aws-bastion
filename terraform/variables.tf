@@ -3,10 +3,22 @@ variable "my_ip" {
   type        = string
  }
 
-variable "ami_id" {
-  description = "The AMI ID that EC2 instances will use. packer-ami.pkr.hcl will overwrite this value."
+variable "ami_tag_bastion" {
+  description = "The tag of the AMI that Bastion instance will use."
   type        = string
-  default     = "ami-08b5b3a93ed654d19"
+  default     = "ubuntu-ansible-ami"
+}
+
+variable "ami_tag_private_ubuntu" {
+  description = "The tag of the AMI that private ubuntu machine will use."
+  type        = string
+  default     = "ubuntu-docker-ami"
+}
+
+variable "ami_tag_private_amazon" {
+  description = "The tag of the AMI that private amazon machine will use."
+  type        = string
+  default     = "amazon-docker-ami"
 }
 
 variable "aws_region" {
@@ -43,12 +55,6 @@ variable "aws_private_subnet_cidr" {
   description = "CIDR blocks for private subnets"
   type        = list(string)
   default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-}
-
-variable "bastion_prefix" {
-  description = "Prefix for Bastion Host"
-  type        = string
-  default     = "bastion"
 }
 
 variable "public_key" {
