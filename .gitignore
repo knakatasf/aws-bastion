@@ -1,12 +1,10 @@
 .idea
-.terraform
-.terraform.lock.hcl
+
+terraform/.terraform
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
 
 aws-key
 aws-key.pub
-
-build.log
-terraform.tfstate
-terraform.tfstate.backup
-terraform.tfvars
 

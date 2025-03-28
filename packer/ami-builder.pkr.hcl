@@ -19,7 +19,7 @@ source "amazon-ebs" "ubuntu_ansible" {
 
   source_ami_filter {
     filters = {
-      name                = "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
+      name                = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
       root-device-type    = "ebs"
       virtualization-type = "hvm"
     }
@@ -74,7 +74,6 @@ source "amazon-ebs" "ubuntu_docker" {
   ssh_username = "ubuntu"
 }
 
-// Build all AMIs concurrently
 build {
   sources = [
     "source.amazon-ebs.ubuntu_ansible",
@@ -82,15 +81,14 @@ build {
     "source.amazon-ebs.ubuntu_docker"
   ]
 
-  // Distribute public key to each AMI
   provisioner "file" {
-    source      = "../aws-key.pub"
-    destination = "/tmp/aws-key.pub"
+    source      = "../ansible-key.pub"
+    destination = "/tmp/ansible-key.pub"
   }
 
   // Provisioning for bastion host: ubuntu ansible
   provisioner "shell" {
-    only = ["source.amazon-ebs.ubuntu_ansible"]
+    only = ["amazon-ebs.ubuntu_ansible"]
     inline = [
       "sudo apt-get update -y",
       "sudo apt-get install -y docker.io ansible",
@@ -99,7 +97,7 @@ build {
       "sudo usermod -a -G docker ubuntu",
 
       "mkdir -p /home/ubuntu/.ssh",
-      "cat /tmp/aws-key.pub >> /home/ubuntu/.ssh/authorized_keys",
+      "cat /tmp/ansible-key.pub >> /home/ubuntu/.ssh/authorized_keys",
       "chown -R ubuntu:ubuntu /home/ubuntu/.ssh",
       "chmod 700 /home/ubuntu/.ssh",
       "chmod 600 /home/ubuntu/.ssh/authorized_keys",
@@ -110,7 +108,7 @@ build {
 
   // Provisioning for private instance: amazon docker
   provisioner "shell" {
-    only = ["source.amazon-ebs.amazon_docker"]
+    only = ["amazon-ebs.amazon_docker"]
     inline = [
       "sudo yum update -y",
       "sudo yum install -y docker",
@@ -119,7 +117,7 @@ build {
       "sudo usermod -a -G docker ec2-user",
 
       "mkdir -p /home/ec2-user/.ssh",
-      "cat /tmp/aws-key.pub >> /home/ec2-user/.ssh/authorized_keys",
+      "cat /tmp/ansible-key.pub >> /home/ec2-user/.ssh/authorized_keys",
       "chown -R ec2-user:ec2-user /home/ec2-user/.ssh",
       "chmod 700 /home/ec2-user/.ssh",
       "chmod 600 /home/ec2-user/.ssh/authorized_keys",
@@ -130,7 +128,7 @@ build {
 
   // Provisioning for private instance: ubuntu docker
   provisioner "shell" {
-    only = ["source.amazon-ebs.ubuntu_docker"]
+    only = ["amazon-ebs.ubuntu_docker"]
     inline = [
       "sudo apt-get update -y",
       "sudo apt-get install -y docker.io",
@@ -139,7 +137,7 @@ build {
       "sudo usermod -a -G docker ubuntu",
 
       "mkdir -p /home/ubuntu/.ssh",
-      "cat /tmp/aws-key.pub >> /home/ubuntu/.ssh/authorized_keys",
+      "cat /tmp/ansible-key.pub >> /home/ubuntu/.ssh/authorized_keys",
       "chown -R ubuntu:ubuntu /home/ubuntu/.ssh",
       "chmod 700 /home/ubuntu/.ssh",
       "chmod 600 /home/ubuntu/.ssh/authorized_keys",
