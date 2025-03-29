@@ -1,0 +1,22 @@
+plugin: aws_ec2
+regions:
+  - us-east-1
+
+filters:
+  instance-state-name: running
+  "tag:OS":
+    - ubuntu
+    - amazon
+
+keyed_groups:
+  - key: tags.OS
+    prefix: os
+
+groups:
+  amazon_linux: "'amazon' in tags.OS"
+  ubuntu: "'ubuntu' in tags.OS"
+  all_ec2: true
+
+compose:
+  ansible_host: private_ip_address
+

@@ -17,6 +17,7 @@ resource "aws_instance" "private-ubuntu" {
 
   tags = {
     Name = "Private Ubuntu ${count.index + 1}"
+    OS   = "ubuntu"
   }
 }
 
@@ -39,5 +40,6 @@ resource "aws_instance" "private-amazon" {
 
   tags = {
     Name = "Private Amazon Linux ${count.index + 1}"
+    OS   = "amazon"
   }
 }

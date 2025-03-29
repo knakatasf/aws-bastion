@@ -6,7 +6,7 @@ variable "my_ip" {
 variable "ami_tag_bastion" {
   description = "The tag of the AMI that Bastion instance will use."
   type        = string
-  default     = "ubuntu-ansible-ami"
+  default     = "ubuntu-docker-ami"
 }
 
 variable "ami_tag_private_ubuntu" {

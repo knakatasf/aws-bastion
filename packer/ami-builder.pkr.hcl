@@ -7,29 +7,6 @@ packer {
   }
 }
 
-// Bastion: ubuntu ansible AMI
-source "amazon-ebs" "ubuntu_ansible" {
-  ami_name      = "ubuntu-ansible-ami"
-  instance_type = "t2.micro"
-  region        = "us-east-1"
-
-  tags = {
-    Application = "ubuntu-ansible-ami"
-  }
-
-  source_ami_filter {
-    filters = {
-      name                = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
-      root-device-type    = "ebs"
-      virtualization-type = "hvm"
-    }
-    most_recent = true
-    owners      = ["099720109477"]
-  }
-  ssh_username = "ubuntu"
-}
-
-
 // Private instance: amazon docker AMI
 source "amazon-ebs" "amazon_docker" {
   ami_name      = "amazon-docker-ami"
@@ -42,7 +19,7 @@ source "amazon-ebs" "amazon_docker" {
 
   source_ami_filter {
     filters = {
-      name                = "amzn2-ami-hvm-*-x86_64-gp2"
+      name                = "al2023-ami-2023*-x86_64"
       root-device-type    = "ebs"
       virtualization-type = "hvm"
     }
@@ -52,7 +29,7 @@ source "amazon-ebs" "amazon_docker" {
   ssh_username = "ec2-user"
 }
 
-// Private instance: ubuntu docker AMI
+// Bastion host and private instance: ubuntu docker AMI
 source "amazon-ebs" "ubuntu_docker" {
   ami_name      = "ubuntu-docker-ami"
   instance_type = "t2.micro"
@@ -76,7 +53,6 @@ source "amazon-ebs" "ubuntu_docker" {
 
 build {
   sources = [
-    "source.amazon-ebs.ubuntu_ansible",
     "source.amazon-ebs.amazon_docker",
     "source.amazon-ebs.ubuntu_docker"
   ]
@@ -84,26 +60,6 @@ build {
   provisioner "file" {
     source      = "../ansible-key.pub"
     destination = "/tmp/ansible-key.pub"
-  }
-
-  // Provisioning for bastion host: ubuntu ansible
-  provisioner "shell" {
-    only = ["amazon-ebs.ubuntu_ansible"]
-    inline = [
-      "sudo apt-get update -y",
-      "sudo apt-get install -y docker.io ansible",
-      "sudo systemctl enable docker",
-      "sudo systemctl start docker",
-      "sudo usermod -a -G docker ubuntu",
-
-      "mkdir -p /home/ubuntu/.ssh",
-      "cat /tmp/ansible-key.pub >> /home/ubuntu/.ssh/authorized_keys",
-      "chown -R ubuntu:ubuntu /home/ubuntu/.ssh",
-      "chmod 700 /home/ubuntu/.ssh",
-      "chmod 600 /home/ubuntu/.ssh/authorized_keys",
-
-      "echo 'Setup complete' > /home/ubuntu/packer-log.txt"
-    ]
   }
 
   // Provisioning for private instance: amazon docker
@@ -126,7 +82,7 @@ build {
     ]
   }
 
-  // Provisioning for private instance: ubuntu docker
+  // Provisioning for bastion host and private instance: ubuntu docker
   provisioner "shell" {
     only = ["amazon-ebs.ubuntu_docker"]
     inline = [
@@ -135,6 +91,10 @@ build {
       "sudo systemctl enable docker",
       "sudo systemctl start docker",
       "sudo usermod -a -G docker ubuntu",
+
+      "sudo apt-get install -y software-properties-common",
+      "sudo add-apt-repository --yes --update ppa:ansible/ansible",
+      "sudo apt-get install -y ansible",
 
       "mkdir -p /home/ubuntu/.ssh",
       "cat /tmp/ansible-key.pub >> /home/ubuntu/.ssh/authorized_keys",

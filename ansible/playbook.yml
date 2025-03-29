@@ -1,0 +1,39 @@
+---
+- hosts: all_ec2
+  become: yes
+  tasks:
+    - name: Update and upgrade packages (Ubuntu)
+      apt:
+        update_cache: yes
+        upgrade: dist
+      when: "'ubuntu' in group_names"
+
+    - name: Update packages (Amazon Linux)
+      yum:
+        name: "*"
+        state: latest
+      when: "'amazon_linux' in group_names"
+
+    - name: Start Docker Service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    # Verify Docker Version
+    - name: Verify Docker version
+      command: docker --version
+      register: docker_version
+
+    - name: Display Docker version
+      debug:
+        msg: "{{ docker_version.stdout }}"
+
+    # Report Disk Usage
+    - name: Report disk usage
+      command: df -h
+      register: disk_usage
+
+    - name: Display disk usage
+      debug:
+        msg: "{{ disk_usage.stdout_lines }}"
