@@ -10,7 +10,7 @@ filters:
 
 keyed_groups:
   - key: tags.OS
-    prefix: os
+    separator: ""
 
 groups:
   amazon_linux: "'amazon' in tags.OS"
